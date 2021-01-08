@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "252705391715",
+    "firebase_url": "https://vici-e4904.firebaseio.com",
+    "project_id": "vici-e4904",
+    "storage_bucket": "vici-e4904.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:252705391715:android:1d7264cf9290ad92092456",
+        "android_client_info": {
+          "package_name": "com.vici.vici"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "252705391715-16jdhgr4khv21c3pbvb1esbuu3cd57jq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vici.vici",
+            "certificate_hash": "51278078d0c2b03bb68304f830856943d60d16bd"
+          }
+        },
+        {
+          "client_id": "252705391715-821s9e2k9kf44slej5n27ogd4evs4vs5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6B6iQyZ7RcmB-zC7pnyu3QSkpFqkntMQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "252705391715-821s9e2k9kf44slej5n27ogd4evs4vs5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

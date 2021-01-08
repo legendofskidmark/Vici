@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Vici</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="distance_string">Distance</string>
+    <string name="price_string">Price</string>
+</resources>
