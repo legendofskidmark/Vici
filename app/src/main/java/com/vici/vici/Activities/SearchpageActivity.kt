@@ -110,6 +110,7 @@ class SearchpageActivity: AppCompatActivity() {
             searchBarSuggestionsList = mutableListOf()
             filteredList.clear()
             loader_view.visibility = View.VISIBLE
+            parent_linear_layout.alpha = 0.3f
             db.collection(StringConstants.ITEM_DETAILS).get().addOnSuccessListener { documentReference ->
                 for (doc in documentReference.documents) {
                     doc.reference.collection(StringConstants.ITEMS).get()
@@ -121,6 +122,7 @@ class SearchpageActivity: AppCompatActivity() {
                                 }
                                 if (documentReference.documents.indexOf(doc) == documentReference.documents.size - 1) {
                                     loader_view.visibility = View.GONE
+                                    parent_linear_layout.alpha = 1f
                                     for(item in searchBarSuggestionsList) {
                                         if (item[StringConstants.NAME].toString().contains(query)) {
                                             filteredList.add(item)
