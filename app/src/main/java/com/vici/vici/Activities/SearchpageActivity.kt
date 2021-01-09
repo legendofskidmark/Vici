@@ -92,7 +92,6 @@ class SearchpageActivity: AppCompatActivity() {
                         saved_items_search_seperator.visibility = View.VISIBLE
                         search_result_recyclerview.visibility = View.VISIBLE
                     }
-//                    filteredList.clear()
                 }
             }
 
@@ -124,17 +123,14 @@ class SearchpageActivity: AppCompatActivity() {
                                     loader_view.visibility = View.GONE
                                     parent_linear_layout.alpha = 1f
                                     for(item in searchBarSuggestionsList) {
-                                        if (item[StringConstants.NAME].toString().contains(query)) {
+                                        if (item[StringConstants.NAME].toString().contains(query, ignoreCase = true)) {
                                             filteredList.add(item)
                                         }
                                     }
-                                    search_result_recyclerview.layoutManager =
-                                        LinearLayoutManager(this)
-                                    search_result_recyclerview.adapter =
-                                        searchResultAdapter(this, filteredList)
+                                    search_result_recyclerview.layoutManager = LinearLayoutManager(this)
+                                    search_result_recyclerview.adapter = searchResultAdapter(this, filteredList)
                                     didHitApi = true
                                 }
-
                             } else {
                                 Toast.makeText(
                                     this,

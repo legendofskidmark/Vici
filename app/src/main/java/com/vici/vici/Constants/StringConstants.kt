@@ -27,7 +27,13 @@ object StringConstants {
     val MODEL = "model"
     val AGE = "age"
     val PRICE = "price"
+    val PER_TIME = "per"
 
     val ITEM_DETAILS = "ItemDetails"
     val ITEMS = "Items"
+
+    val ORGANIZED_GROUP = "OrganizedGroup"
+    val PRODUCTS = "Products"
+    val IS_ALIVE = "IsAlive"
+    val FROM_USER = "FromUser"
 }
