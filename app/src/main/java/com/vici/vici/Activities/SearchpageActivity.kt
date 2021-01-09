@@ -80,14 +80,6 @@ class SearchpageActivity: AppCompatActivity() {
 
     private fun configureSearchBar() {
 
-//        val adapter = HPSearchAdapter(
-//            this,
-//            R.layout.activity_searchpage,
-//            R.id.searchpage_Searchbar,
-//            searchBarSuggestionsList
-//        )
-//        searchpage_Searchbar.setAdapter(adapter)
-
         searchpage_Searchbar.editText?.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
@@ -117,39 +109,42 @@ class SearchpageActivity: AppCompatActivity() {
         if (!didHitApi) {
             searchBarSuggestionsList = mutableListOf()
             filteredList.clear()
-            db.collection(StringConstants.ITEM_DETAILS).get()
-                .addOnSuccessListener { documentReference ->
-                    for (doc in documentReference.documents) {
-                        doc.reference.collection(StringConstants.ITEMS).get()
-                            .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    val itemsList = task.result.toList()
-                                    for (item in itemsList) {
-                                        searchBarSuggestionsList.add(item)
-                                    }
-                                } else {
-                                    Toast.makeText(
-                                        this,
-                                        "Something went wrong. Please try again later",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                    Log.e(mTAG, "Search Filter Listings Failed")
-                                    return@addOnCompleteListener
+            loader_view.visibility = View.VISIBLE
+            db.collection(StringConstants.ITEM_DETAILS).get().addOnSuccessListener { documentReference ->
+                for (doc in documentReference.documents) {
+                    doc.reference.collection(StringConstants.ITEMS).get()
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val itemsList = task.result.toList()
+                                for (item in itemsList) {
+                                    searchBarSuggestionsList.add(item)
                                 }
-                            }
-                    }
+                                if (documentReference.documents.indexOf(doc) == documentReference.documents.size - 1) {
+                                    loader_view.visibility = View.GONE
+                                    for(item in searchBarSuggestionsList) {
+                                        if (item[StringConstants.NAME].toString().contains(query)) {
+                                            filteredList.add(item)
+                                        }
+                                    }
+                                    search_result_recyclerview.layoutManager =
+                                        LinearLayoutManager(this)
+                                    search_result_recyclerview.adapter =
+                                        searchResultAdapter(this, filteredList)
+                                    didHitApi = true
+                                }
 
-                    for(item in searchBarSuggestionsList) {
-                        if (item[StringConstants.NAME].toString().contains(query)) {
-                            filteredList.add(item)
+                            } else {
+                                Toast.makeText(
+                                    this,
+                                    "Something went wrong. Please try again later",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                Log.e(mTAG, "Search Filter Listings Failed")
+                                return@addOnCompleteListener
+                            }
                         }
-                    }
-                    search_result_recyclerview.layoutManager =
-                        LinearLayoutManager(this)
-                    search_result_recyclerview.adapter =
-                        searchResultAdapter(this, filteredList)
-                    didHitApi = true
                 }
+            }
         } else {
             for(ad in searchBarSuggestionsList) {
                 if (ad[StringConstants.NAME].toString().contains(query)) {
