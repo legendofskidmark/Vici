@@ -80,14 +80,6 @@ class SearchpageActivity: AppCompatActivity() {
 
     private fun configureSearchBar() {
 
-//        val adapter = HPSearchAdapter(
-//            this,
-//            R.layout.activity_searchpage,
-//            R.id.searchpage_Searchbar,
-//            searchBarSuggestionsList
-//        )
-//        searchpage_Searchbar.setAdapter(adapter)
-
         searchpage_Searchbar.editText?.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
