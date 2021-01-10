@@ -6,6 +6,7 @@ object StringConstants {
     val FILLED_THE_FORM = "didFilledTheForm"
     val ACTION_BAR_TITLE = "actionBarTitle"
     val CLICKED_SEARCH_RESULT = "clickedSearchResult"
+    val CLICKED_SEARCH_RESULT_BUNDLE = "clickedSearchResultBundle"
     val QUERIED_SEARCH_RESULT = "queriedSearchResult"
     val RECENT_SEARCH_LIST = "recentSearchList"
     val SAVED_ITEMS_LIST = "savedItemsList"

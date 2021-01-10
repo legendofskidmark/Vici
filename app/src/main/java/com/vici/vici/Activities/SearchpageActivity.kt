@@ -25,13 +25,17 @@ import com.vici.vici.Util.SharedPreferencesUtility
 import com.vici.vici.Util.Utility
 import kotlinx.android.synthetic.main.activity_searchpage.*
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 class SearchpageActivity: AppCompatActivity() {
 
     val mTAG = "SearchpageActivity"
     lateinit var searchBarSuggestionsList: MutableList<QueryDocumentSnapshot>
-    var filteredList: MutableList<QueryDocumentSnapshot> = mutableListOf()
+    var filteredList: MutableList<HashMap<String, String>> = mutableListOf()
+    var filteredListGroup = HashMap<String, ArrayList<HashMap<String, String>>>()
+    var groupedItems = HashMap<String, ArrayList<HashMap<String, String>>>()
     var recentSearchedList: ArrayList<String> = ArrayList()
     var didHitApi = false
 
@@ -49,8 +53,47 @@ class SearchpageActivity: AppCompatActivity() {
         searchpage_Searchbar.setStartIconOnClickListener { finish() }
     }
 
+    private fun setGroupedItems() {
+        loader_view.visibility = View.VISIBLE
+        db.collection(StringConstants.ORGANIZED_GROUP).get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val y = task.result.documents
+                for (brand in task.result.documents) {
+                    brand.reference.collection(StringConstants.PRODUCTS).get().addOnCompleteListener { productTask ->
+                        if (productTask.isSuccessful) {
+                            for (doc in productTask.result.documents) {
+                                val brand = doc[StringConstants.BRAND]
+
+                                val details = hashMapOf(
+                                    StringConstants.BRAND to brand.toString(),
+                                    StringConstants.NAME to doc[StringConstants.NAME].toString(),
+                                    StringConstants.MODEL to doc[StringConstants.MODEL].toString(),
+                                    StringConstants.AGE to doc[StringConstants.AGE].toString(),
+                                    StringConstants.PER_TIME to doc[StringConstants.PER_TIME].toString(),
+                                    StringConstants.PRICE to doc[StringConstants.PRICE].toString()
+                                )
+
+                                if (groupedItems[brand.toString().toUpperCase()].isNullOrEmpty()) {
+                                    val arrayList = ArrayList<HashMap<String, String>>()
+                                    arrayList.add(details)
+                                    groupedItems[brand.toString().toUpperCase()] = arrayList
+                                } else {
+                                    groupedItems[brand.toString().toUpperCase()]?.add(details)
+                                }
+                            }
+                        }
+                    }
+                    if (task.result.documents.last() == brand) {
+                        loader_view.visibility = View.GONE
+                    }
+                }
+            }
+        }
+    }
+
     override fun onStart() {
         super.onStart()
+        setGroupedItems()
         handleRecentSearches()
         didHitApi = false
     }
@@ -99,63 +142,43 @@ class SearchpageActivity: AppCompatActivity() {
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 filteredList.clear()
+                filteredListGroup.clear()
             }
         })
     }
 
     private fun handleSearchResults(query: String) {
 
-        if (!didHitApi) {
-            searchBarSuggestionsList = mutableListOf()
-            filteredList.clear()
-            loader_view.visibility = View.VISIBLE
-            parent_linear_layout.alpha = 0.3f
-            db.collection(StringConstants.ITEM_DETAILS).get().addOnSuccessListener { documentReference ->
-                for (doc in documentReference.documents) {
-                    doc.reference.collection(StringConstants.ITEMS).get()
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                val itemsList = task.result.toList()
-                                for (item in itemsList) {
-                                    searchBarSuggestionsList.add(item)
-                                }
-                                if (documentReference.documents.indexOf(doc) == documentReference.documents.size - 1) {
-                                    loader_view.visibility = View.GONE
-                                    parent_linear_layout.alpha = 1f
-                                    for(item in searchBarSuggestionsList) {
-                                        if (item[StringConstants.NAME].toString().contains(query, ignoreCase = true)) {
-                                            filteredList.add(item)
-                                        }
-                                    }
-                                    search_result_recyclerview.layoutManager = LinearLayoutManager(this)
-                                    search_result_recyclerview.adapter = searchResultAdapter(this, filteredList)
-                                    didHitApi = true
-                                }
-                            } else {
-                                Toast.makeText(
-                                    this,
-                                    "Something went wrong. Please try again later",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                Log.e(mTAG, "Search Filter Listings Failed")
-                                return@addOnCompleteListener
-                            }
-                        }
+        for (brandedItem in groupedItems) {
+            if (brandedItem.value.size > 1) {
+                for (item in brandedItem.value) {
+                    if (doesItemContainsQueryString(item, brandedItem.key, query)) {
+                        filteredListGroup.put(brandedItem.key, brandedItem.value)
+                        break
+                    }
                 }
             }
-        } else {
-            for(ad in searchBarSuggestionsList) {
-                if (ad[StringConstants.NAME].toString().contains(query)) {
-                    filteredList.add(ad)
-                }
-            }
-            search_result_recyclerview.layoutManager = LinearLayoutManager(this)
-            search_result_recyclerview.adapter = searchResultAdapter(this, filteredList)
-            (search_result_recyclerview.adapter as searchResultAdapter).notifyDataSetChanged()
         }
 
+        for (brandedItem in groupedItems) {
+            for (item in brandedItem.value) {
+                if (doesItemContainsQueryString(item, brandedItem.key, query)) {
+                    filteredList.add(item)
+                }
+            }
+        }
 
-//        TODO("Always take 9 top results the logic for which to be written will be in firebase")
+//        TODO("make use of group passed to adapter")
+
+        search_result_recyclerview.layoutManager = LinearLayoutManager(this)
+        search_result_recyclerview.adapter = searchResultAdapter(this, filteredList, filteredListGroup.toList())
+        (search_result_recyclerview.adapter as searchResultAdapter).notifyDataSetChanged()
+
+    }
+
+    private fun doesItemContainsQueryString(item: HashMap<String, String>, brandName: String, query: String): Boolean {
+        if (item[StringConstants.NAME]!!.contains(query, ignoreCase = true) || item[StringConstants.MODEL]!!.contains(query, ignoreCase = true) || brandName.contains(query, ignoreCase = true)) return true
+        return false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

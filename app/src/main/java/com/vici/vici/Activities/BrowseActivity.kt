@@ -126,6 +126,10 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
 
         ads_recyclerview.adapter = AdsResultAdapter(this, dummyResponse)
         ads_recyclerview.layoutManager = LinearLayoutManager(this)
+
+        val bundle = intent.extras
+        val x = bundle?.getSerializable(StringConstants.CLICKED_SEARCH_RESULT_BUNDLE)
+        val y = x!!
     }
 
     private fun configureDateTimePicker() {
