@@ -51,87 +51,87 @@ class MapsViewActivity: AppCompatActivity(), OnMapReadyCallback {
         url.add("https://d2e111jq13me73.cloudfront.net/sites/default/files/styles/review_gallery_thumbnail_large/public/screenshots/csm-tv/the-flintstones-ss1.jpg?itok=mq5Z7hG3")
         url.add("https://d2e111jq13me73.cloudfront.net/sites/default/files/styles/review_gallery_thumbnail_large/public/screenshots/csm-tv/the-flintstones-ss1.jpg?itok=mq5Z7hG3")
 
-        val a = AdModel(url, "0", "Satyanarayan colony", 321.7, 567, "Rating |2.7", LatLng(17.25186, 78.41835))
-        val b = AdModel(
-            url,
-            "1",
-            "Satyanarayan colony",
-            177.7,
-            4123,
-            "Rating |4.9",
-            LatLng(17.4185, 78.4222)
-        )
-        val c = AdModel(
-            url,
-            "2",
-            "Satyanarayan colony",
-            707.7,
-            98,
-            "Rating |3.7",
-            LatLng(17.4326, 78.4071)
-        )
-        val d = AdModel(
-            url,
-            "3",
-            "Satyanarayan colony",
-            7.78,
-            5678,
-            "Rating |41.7",
-            LatLng(17.0289, 78.4605)
-        )
-        val e = AdModel(
-            url,
-            "4",
-            "Satyanarayan colony",
-            124.7,
-            462,
-            "Rating |9.7",
-            LatLng(17.986, 78.415)
-        )
-        val f = AdModel(
-            url,
-            "5",
-            "Satyanarayan colony",
-            97.7,
-            59,
-            "Rating |45.7",
-            LatLng(17.2596, 78.545)
-        )
-        val g = AdModel(
-            url,
-            "6",
-            "Satyanarayan colony",
-            17.7,
-            43,
-            "Rating |687.7",
-            LatLng(17.186, 78.4135)
-        )
-        val h = AdModel(
-            url,
-            "7",
-            "Satyanarayan colony",
-            789.7,
-            867,
-            "Rating |5.7",
-            LatLng(17.286, 78.1835)
-        )
-
-
-        dummyResponse.add(a)
-        dummyResponse.add(b)
-        dummyResponse.add(c)
-        dummyResponse.add(d)
-        dummyResponse.add(e)
-        dummyResponse.add(f)
-        dummyResponse.add(g)
-        dummyResponse.add(h)
-
-        map_view_recyclerview.adapter = MapViewAdapter(this, dummyResponse)
-        map_view_recyclerview.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-
-        val snapHelper = LinearSnapHelper()
-        snapHelper.attachToRecyclerView(map_view_recyclerview)
+//        val a = AdModel(url, "0", "Satyanarayan colony", 321.7, 567, "Rating |2.7", LatLng(17.25186, 78.41835))
+//        val b = AdModel(
+//            url,
+//            "1",
+//            "Satyanarayan colony",
+//            177.7,
+//            4123,
+//            "Rating |4.9",
+//            LatLng(17.4185, 78.4222)
+//        )
+//        val c = AdModel(
+//            url,
+//            "2",
+//            "Satyanarayan colony",
+//            707.7,
+//            98,
+//            "Rating |3.7",
+//            LatLng(17.4326, 78.4071)
+//        )
+//        val d = AdModel(
+//            url,
+//            "3",
+//            "Satyanarayan colony",
+//            7.78,
+//            5678,
+//            "Rating |41.7",
+//            LatLng(17.0289, 78.4605)
+//        )
+//        val e = AdModel(
+//            url,
+//            "4",
+//            "Satyanarayan colony",
+//            124.7,
+//            462,
+//            "Rating |9.7",
+//            LatLng(17.986, 78.415)
+//        )
+//        val f = AdModel(
+//            url,
+//            "5",
+//            "Satyanarayan colony",
+//            97.7,
+//            59,
+//            "Rating |45.7",
+//            LatLng(17.2596, 78.545)
+//        )
+//        val g = AdModel(
+//            url,
+//            "6",
+//            "Satyanarayan colony",
+//            17.7,
+//            43,
+//            "Rating |687.7",
+//            LatLng(17.186, 78.4135)
+//        )
+//        val h = AdModel(
+//            url,
+//            "7",
+//            "Satyanarayan colony",
+//            789.7,
+//            867,
+//            "Rating |5.7",
+//            LatLng(17.286, 78.1835)
+//        )
+//
+//
+//        dummyResponse.add(a)
+//        dummyResponse.add(b)
+//        dummyResponse.add(c)
+//        dummyResponse.add(d)
+//        dummyResponse.add(e)
+//        dummyResponse.add(f)
+//        dummyResponse.add(g)
+//        dummyResponse.add(h)
+//
+//        map_view_recyclerview.adapter = MapViewAdapter(this, dummyResponse)
+//        map_view_recyclerview.layoutManager =
+//            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+//
+//        val snapHelper = LinearSnapHelper()
+//        snapHelper.attachToRecyclerView(map_view_recyclerview)
 
     }
 

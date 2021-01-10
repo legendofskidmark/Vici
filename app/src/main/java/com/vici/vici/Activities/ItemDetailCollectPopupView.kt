@@ -62,6 +62,7 @@ class ItemDetailCollectPopupView(val mContext: Context, val itemName: String): A
                 val userEmailID = sharedPref.getString(USER_EMAIL_ID, "").toString()
 
                 val itemDetails = hashMapOf(
+                    USER_EMAIL_ID to userEmailID,
                     NAME to itemName,
                     BRAND to brand,
                     MODEL to model,
@@ -70,13 +71,14 @@ class ItemDetailCollectPopupView(val mContext: Context, val itemName: String): A
                     PER_TIME to perItem
                 )
 
-                db.collection(ITEM_DETAILS).document(userEmailID).collection(ITEMS).add(itemDetails).addOnSuccessListener { documentReference ->
-                    db.collection(ORGANIZED_GROUP).document(brand.toUpperCase()).collection(PRODUCTS).document(documentReference.id).set(itemDetails).addOnCompleteListener {
-                        task -> if (task.isSuccessful) {
-                            Log.d(mTAG, "Brand(ed) item added to Group Table")
-                        } else {
-                            Log.d(mTAG, "Brand(ed) item FAILED to add in Group Table")
-                        }
+                val userMailMappy = hashMapOf(
+                    USER_EMAIL_ID to userEmailID
+                )
+
+                db.collection(ORGANIZED_GROUP).document(brand.toUpperCase()).collection(PRODUCTS).add(itemDetails).addOnSuccessListener { documentReference ->
+                    db.collection(ITEM_DETAILS).document(documentReference.id).set(userMailMappy).addOnCompleteListener { task ->
+                        if (task.isSuccessful) Log.d(mTAG, "Item Details added with ${documentReference.id} for ${userEmailID} succesfully")
+                        else Log.d(mTAG, "Item Details failed to add into DB")
                     }
                 }
 

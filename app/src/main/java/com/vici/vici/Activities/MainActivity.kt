@@ -60,6 +60,7 @@ class MainActivity: AppCompatActivity() {
             val intent = Intent(this, NewUserActiviy::class.java)
             startActivity(intent)
         } else {
+            configureSharedPrefsForNewUserActivity()
             val intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
         }
@@ -139,6 +140,7 @@ class MainActivity: AppCompatActivity() {
                     userEmailID = user?.email.toString()
 
                     if (new == false) {
+                        configureSharedPrefsForNewUserActivity()
                         val intent = Intent(this, MapsActivity::class.java)
                         startActivity(intent)
                     } else {
@@ -170,6 +172,22 @@ class MainActivity: AppCompatActivity() {
             spEditor.putBoolean(StringConstants.IS_FRESH_INSTALL, false)
             shouldDisplaySignIn = true
         }
+        spEditor.apply()
+    }
+
+    private fun configureSharedPrefsForNewUserActivity() {
+        val sharedPref = SharedPreferencesUtility.openSharedPreferencesWith(applicationContext, StringConstants.SHARED_PREF_FILE_NAME)
+//            getSharedPreferences(StringConstants.SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
+        val spEditor = sharedPref.edit()
+
+        if (sharedPref.contains(StringConstants.FILLED_THE_FORM)) {
+            // already filled
+
+        } else {
+            // first time
+            spEditor.putBoolean(StringConstants.FILLED_THE_FORM, true)
+        }
+
         spEditor.apply()
     }
 }

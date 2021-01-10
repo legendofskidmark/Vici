@@ -106,16 +106,14 @@ class NewUserActiviy: AppCompatActivity() {
                         //do nothing
                     } else {
                         val user = hashMapOf(
-                            StringConstants.USER_EMAIL_ID to userEmailID,
                             StringConstants.NAME to name,
                             StringConstants.MOBILE to phNo,
                             StringConstants.ADDRESS to address
                         )
 
-                        db.collection(StringConstants.UsersDBName).add(user).addOnSuccessListener { documentReference ->
-                            Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-                        }.addOnFailureListener { e ->
-                            Log.w(TAG, "Error adding document", e)
+                        db.collection(StringConstants.UsersDBName).document(userEmailID.toLowerCase()).set(user).addOnCompleteListener { task ->
+                            if (task.isSuccessful) Log.d(TAG, "User data added succesfully into DB")
+                            else Log.d(TAG, "Failed to add User Data into DB")
                         }
                     }
                 }
