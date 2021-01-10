@@ -18,11 +18,16 @@ import com.vici.vici.Activities.MainActivity.Companion.db
 import com.vici.vici.Constants.StringConstants
 import com.vici.vici.Constants.StringConstants.AGE
 import com.vici.vici.Constants.StringConstants.BRAND
+import com.vici.vici.Constants.StringConstants.FROM_USER
+import com.vici.vici.Constants.StringConstants.IS_ALIVE
 import com.vici.vici.Constants.StringConstants.ITEMS
 import com.vici.vici.Constants.StringConstants.ITEM_DETAILS
 import com.vici.vici.Constants.StringConstants.MODEL
 import com.vici.vici.Constants.StringConstants.NAME
+import com.vici.vici.Constants.StringConstants.ORGANIZED_GROUP
+import com.vici.vici.Constants.StringConstants.PER_TIME
 import com.vici.vici.Constants.StringConstants.PRICE
+import com.vici.vici.Constants.StringConstants.PRODUCTS
 import com.vici.vici.Constants.StringConstants.USER_EMAIL_ID
 import com.vici.vici.R
 import com.vici.vici.Util.SharedPreferencesUtility
@@ -48,6 +53,7 @@ class ItemDetailCollectPopupView(val mContext: Context, val itemName: String): A
             val model = view.model_name_editText.text.toString()
             val age = view.age_editText.text.toString()
             val price = view.price_editText.text.toString()
+            val perItem = view.per_time_spinner.selectedItem.toString()
 
             if (brand.isEmpty() || model.isEmpty() || age.isEmpty() || price.isEmpty()) {
                 Toast.makeText(context, "Please enter all the details", Toast.LENGTH_LONG).show()
@@ -60,10 +66,19 @@ class ItemDetailCollectPopupView(val mContext: Context, val itemName: String): A
                     BRAND to brand,
                     MODEL to model,
                     AGE to age,
-                    PRICE to price
+                    PRICE to price,
+                    PER_TIME to perItem
                 )
 
-                db.collection(ITEM_DETAILS).document(userEmailID).collection(ITEMS).add(itemDetails)
+                db.collection(ITEM_DETAILS).document(userEmailID).collection(ITEMS).add(itemDetails).addOnSuccessListener { documentReference ->
+                    db.collection(ORGANIZED_GROUP).document(brand.toUpperCase()).collection(PRODUCTS).document(documentReference.id).set(itemDetails).addOnCompleteListener {
+                        task -> if (task.isSuccessful) {
+                            Log.d(mTAG, "Brand(ed) item added to Group Table")
+                        } else {
+                            Log.d(mTAG, "Brand(ed) item FAILED to add in Group Table")
+                        }
+                    }
+                }
 
                 alertDialog.dismiss()
             }

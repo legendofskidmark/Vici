@@ -105,14 +105,14 @@ class NewUserActiviy: AppCompatActivity() {
                     if (task.result.toList().size > 0) {
                         //do nothing
                     } else {
-                        val users = hashMapOf(
+                        val user = hashMapOf(
                             StringConstants.USER_EMAIL_ID to userEmailID,
                             StringConstants.NAME to name,
                             StringConstants.MOBILE to phNo,
                             StringConstants.ADDRESS to address
                         )
 
-                        db.collection(StringConstants.UsersDBName).add(users).addOnSuccessListener { documentReference ->
+                        db.collection(StringConstants.UsersDBName).add(user).addOnSuccessListener { documentReference ->
                             Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
                         }.addOnFailureListener { e ->
                             Log.w(TAG, "Error adding document", e)

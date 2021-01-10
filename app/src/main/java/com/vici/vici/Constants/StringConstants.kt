@@ -6,6 +6,7 @@ object StringConstants {
     val FILLED_THE_FORM = "didFilledTheForm"
     val ACTION_BAR_TITLE = "actionBarTitle"
     val CLICKED_SEARCH_RESULT = "clickedSearchResult"
+    val CLICKED_SEARCH_RESULT_BUNDLE = "clickedSearchResultBundle"
     val QUERIED_SEARCH_RESULT = "queriedSearchResult"
     val RECENT_SEARCH_LIST = "recentSearchList"
     val SAVED_ITEMS_LIST = "savedItemsList"
@@ -27,7 +28,13 @@ object StringConstants {
     val MODEL = "model"
     val AGE = "age"
     val PRICE = "price"
+    val PER_TIME = "per"
 
     val ITEM_DETAILS = "ItemDetails"
     val ITEMS = "Items"
+
+    val ORGANIZED_GROUP = "OrganizedGroup"
+    val PRODUCTS = "Products"
+    val IS_ALIVE = "IsAlive"
+    val FROM_USER = "FromUser"
 }
