@@ -57,7 +57,6 @@ class SearchpageActivity: AppCompatActivity() {
         loader_view.visibility = View.VISIBLE
         db.collection(StringConstants.ORGANIZED_GROUP).get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val y = task.result.documents
                 for (brand in task.result.documents) {
                     brand.reference.collection(StringConstants.PRODUCTS).get().addOnCompleteListener { productTask ->
                         if (productTask.isSuccessful) {
@@ -65,6 +64,7 @@ class SearchpageActivity: AppCompatActivity() {
                                 val brand = doc[StringConstants.BRAND]
 
                                 val details = hashMapOf(
+                                    StringConstants.USER_EMAIL_ID to doc[StringConstants.USER_EMAIL_ID].toString(),
                                     StringConstants.BRAND to brand.toString(),
                                     StringConstants.NAME to doc[StringConstants.NAME].toString(),
                                     StringConstants.MODEL to doc[StringConstants.MODEL].toString(),
@@ -93,6 +93,9 @@ class SearchpageActivity: AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        filteredList.clear()
+        filteredListGroup.clear()
+        groupedItems.clear()
         setGroupedItems()
         handleRecentSearches()
         didHitApi = false
@@ -167,8 +170,6 @@ class SearchpageActivity: AppCompatActivity() {
                 }
             }
         }
-
-//        TODO("make use of group passed to adapter")
 
         search_result_recyclerview.layoutManager = LinearLayoutManager(this)
         search_result_recyclerview.adapter = searchResultAdapter(this, filteredList, filteredListGroup.toList())

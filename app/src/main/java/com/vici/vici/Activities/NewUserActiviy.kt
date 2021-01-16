@@ -106,7 +106,6 @@ class NewUserActiviy: AppCompatActivity() {
                         //do nothing
                     } else {
                         val user = hashMapOf(
-                            StringConstants.USER_EMAIL_ID to userEmailID,
                             StringConstants.NAME to name,
                             StringConstants.MOBILE to phNo,
                             StringConstants.ADDRESS to address
