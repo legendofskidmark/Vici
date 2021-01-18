@@ -145,23 +145,23 @@ class MapsViewActivity: AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        addMarkersOnMap()
+//        addMarkersOnMap()
 
         map_view_recyclerview.addOnScrollListener(RecyclerViewScrollListener(this, mMap, dummyResponse, markerLatLongHM, markerLatLongHM.toList()))
     }
 
-    private fun addMarkersOnMap() {
-        var flag = true
-        for (ad in dummyResponse) {
-            if (flag) {
-                markerLatLongHM[ad.latLng] = mMap.addMarker(MarkerOptions().position(ad.latLng).title("Marker in "))
-                flag = false
-                continue
-            }
-            markerLatLongHM[ad.latLng] = mMap.addMarker(MarkerOptions().position(ad.latLng).title("Marker in ${ad.latLng.toString()}").icon(bitmapDescriptorFromVector(this, R.drawable.ic_map_marker)))
-        }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(dummyResponse[0].latLng, 10f))
-    }
+//    private fun addMarkersOnMap() {
+//        var flag = true
+//        for (ad in dummyResponse) {
+//            if (flag) {
+//                markerLatLongHM[ad.latLng] = mMap.addMarker(MarkerOptions().position(ad.latLng).title("Marker in "))
+//                flag = false
+//                continue
+//            }
+//            markerLatLongHM[ad.latLng] = mMap.addMarker(MarkerOptions().position(ad.latLng).title("Marker in ${ad.latLng.toString()}").icon(bitmapDescriptorFromVector(this, R.drawable.ic_map_marker)))
+//        }
+//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(dummyResponse[0].latLng, 10f))
+//    }
 }
 
 class RecyclerViewScrollListener(val mContext: Context, val mapRef: GoogleMap, val mapDataPoints: ArrayList<AdModel>, val markerLatLngHM: HashMap<LatLng, Marker>, val marketLatLngList: List<Pair<LatLng, Marker>>) : RecyclerView.OnScrollListener() {
@@ -180,9 +180,9 @@ class RecyclerViewScrollListener(val mContext: Context, val mapRef: GoogleMap, v
     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
         super.onScrollStateChanged(recyclerView, newState)
         if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-            mapRef.moveCamera(CameraUpdateFactory.newLatLngZoom(mapDataPoints[indexOfCurrentLatLong].latLng, 10f))
+//            mapRef.moveCamera(CameraUpdateFactory.newLatLngZoom(mapDataPoints[indexOfCurrentLatLong].latLng, 10f))
             mapRef.moveCamera(CameraUpdateFactory.scrollBy(10f, 10f))
-            bounceMarker(mapDataPoints[indexOfCurrentLatLong].latLng)
+//            bounceMarker(mapDataPoints[indexOfCurrentLatLong].latLng)
         }
     }
 

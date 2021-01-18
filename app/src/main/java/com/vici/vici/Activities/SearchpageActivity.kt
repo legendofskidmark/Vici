@@ -62,23 +62,31 @@ class SearchpageActivity: AppCompatActivity() {
                         if (productTask.isSuccessful) {
                             for (doc in productTask.result.documents) {
                                 val brand = doc[StringConstants.BRAND]
+                                val itemOwnerMailID = doc[StringConstants.USER_EMAIL_ID].toString()
 
-                                val details = hashMapOf(
-                                    StringConstants.USER_EMAIL_ID to doc[StringConstants.USER_EMAIL_ID].toString(),
-                                    StringConstants.BRAND to brand.toString(),
-                                    StringConstants.NAME to doc[StringConstants.NAME].toString(),
-                                    StringConstants.MODEL to doc[StringConstants.MODEL].toString(),
-                                    StringConstants.AGE to doc[StringConstants.AGE].toString(),
-                                    StringConstants.PER_TIME to doc[StringConstants.PER_TIME].toString(),
-                                    StringConstants.PRICE to doc[StringConstants.PRICE].toString()
-                                )
+                                db.collection(StringConstants.UsersDBName).document(itemOwnerMailID).get().addOnCompleteListener { innerTask ->
+                                    if (innerTask.isSuccessful) {
+                                        val latLong = innerTask.result[StringConstants.LAT_LONG].toString()
 
-                                if (groupedItems[brand.toString().toUpperCase()].isNullOrEmpty()) {
-                                    val arrayList = ArrayList<HashMap<String, String>>()
-                                    arrayList.add(details)
-                                    groupedItems[brand.toString().toUpperCase()] = arrayList
-                                } else {
-                                    groupedItems[brand.toString().toUpperCase()]?.add(details)
+                                        val details = hashMapOf(
+                                            StringConstants.USER_EMAIL_ID to itemOwnerMailID,
+                                            StringConstants.BRAND to brand.toString(),
+                                            StringConstants.NAME to doc[StringConstants.NAME].toString(),
+                                            StringConstants.MODEL to doc[StringConstants.MODEL].toString(),
+                                            StringConstants.AGE to doc[StringConstants.AGE].toString(),
+                                            StringConstants.PER_TIME to doc[StringConstants.PER_TIME].toString(),
+                                            StringConstants.PRICE to doc[StringConstants.PRICE].toString(),
+                                            StringConstants.LAT_LONG to latLong
+                                        )
+
+                                        if (groupedItems[brand.toString().toUpperCase()].isNullOrEmpty()) {
+                                            val arrayList = ArrayList<HashMap<String, String>>()
+                                            arrayList.add(details)
+                                            groupedItems[brand.toString().toUpperCase()] = arrayList
+                                        } else {
+                                            groupedItems[brand.toString().toUpperCase()]?.add(details)
+                                        }
+                                    }
                                 }
                             }
                         }

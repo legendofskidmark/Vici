@@ -34,7 +34,8 @@
             android:background="@android:color/holo_green_dark"
             android:gravity="center"
             android:textColor="@android:color/white"
-            android:text="Rating : 3.5/5"/>
+            android:text="Rating : 3.5/5"
+            android:visibility="gone"/>
     </FrameLayout>
     
     <TextView

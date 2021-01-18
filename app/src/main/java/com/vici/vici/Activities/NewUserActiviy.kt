@@ -1,7 +1,10 @@
 package com.vici.vici.Activities
 
+import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,7 +13,13 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
 import com.google.android.material.chip.Chip
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -24,7 +33,14 @@ import kotlinx.android.synthetic.main.activity_newuser.view.*
 
 class NewUserActiviy: AppCompatActivity() {
 
+    lateinit var name: String
+    lateinit var phNo: String
+    lateinit var address: String
+    lateinit var currentLatLang: LatLng
     val TAG = "NEW_USER_ACTIVITY"
+    private val FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
+    private val COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION
+    private val LOCATION_PERMISSION_REQUEST_CODE = 1234
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,18 +91,18 @@ class NewUserActiviy: AppCompatActivity() {
         done_newuser_button.setOnClickListener {
             if (ifAllDetailsAreFilledThenAddtoDB()) {
                 configureSharedPrefsForNewUserActivity()
-                val intent = Intent(this, MapsActivity::class.java)
-                startActivity(intent)
-                finish()
+//                val intent = Intent(this, MapsActivity::class.java)
+//                startActivity(intent)
+//                finish()
             }
         }
     }
 
 
     private fun ifAllDetailsAreFilledThenAddtoDB(): Boolean {
-        val name = name_textview.editText?.text.toString()
-        val phNo = phone_textview.editText?.text.toString()
-        val address = address_newuser_textview.editText?.text.toString()
+        name = name_textview.editText?.text.toString()
+        phNo = phone_textview.editText?.text.toString()
+        address = address_newuser_textview.editText?.text.toString()
 
         //if there are any items, if they wanna lend, add em to DB as well
 
@@ -105,22 +121,10 @@ class NewUserActiviy: AppCompatActivity() {
                     if (task.result.toList().size > 0) {
                         //do nothing
                     } else {
-                        val user = hashMapOf(
-                            StringConstants.NAME to name,
-                            StringConstants.MOBILE to phNo,
-                            StringConstants.ADDRESS to address
-                        )
-
-                        db.collection(StringConstants.UsersDBName).add(user).addOnSuccessListener { documentReference ->
-                            Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-                        }.addOnFailureListener { e ->
-                            Log.w(TAG, "Error adding document", e)
-                        }
+                        getDeviceLocationAndAddtoDB()
                     }
                 }
             }
-
-
         }
         return true
     }
@@ -133,5 +137,87 @@ class NewUserActiviy: AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
+    }
+
+    private fun getDeviceLocationAndAddtoDB() {
+        val location = if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+                val permissions = arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+                if (ContextCompat.checkSelfPermission(this.applicationContext, FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(this.applicationContext, COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    } else {
+                        ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
+                    }
+                } else {
+                    ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
+                }
+//            return
+        } else {
+
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.size > 0) {
+                    var i = 0
+                    while (i < grantResults.size) {
+                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                            return
+                        }
+                        i++
+                    }
+
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        return;
+                    }
+                    MapsActivity.mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+                    MapsActivity.mFusedLocationProviderClient!!.lastLocation.addOnCompleteListener(object : OnCompleteListener<Location> {
+                        override fun onComplete(task: Task<Location>) {
+                            if (task.isSuccessful) {
+                                val currentLocation: Location? = task.result
+                                if (currentLocation != null) {
+                                    currentLatLang = LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())
+                                    val user = hashMapOf(
+                                        StringConstants.NAME to name,
+                                        StringConstants.MOBILE to phNo,
+                                        StringConstants.ADDRESS to address,
+                                        StringConstants.LAT_LONG to currentLocation.latitude.toString() + "," + currentLocation.longitude.toString()
+                                    )
+
+                                    db.collection(StringConstants.UsersDBName).document(MainActivity.userEmailID).set(user).addOnSuccessListener { task ->
+                                        Log.d(TAG, "Users DB Task Success")
+                                    }.addOnFailureListener { e ->
+                                        Log.w(TAG, "Error adding document", e)
+                                    }
+
+                                    val intent = Intent(applicationContext, MapsActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            } else {
+                                print("unable to get current location")
+                            }
+                        }
+                    })
+                }
+            }
+        }
     }
 }

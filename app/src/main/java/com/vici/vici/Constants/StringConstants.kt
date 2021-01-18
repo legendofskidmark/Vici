@@ -29,6 +29,7 @@ object StringConstants {
     val AGE = "age"
     val PRICE = "price"
     val PER_TIME = "per"
+    val LAT_LONG = "latLong"
 
     val ITEM_DETAILS = "ItemDetails"
     val ITEMS = "Items"

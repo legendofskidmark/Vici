@@ -1,18 +1,28 @@
 package com.vici.vici.Activities
 
+import android.Manifest
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
-import android.widget.Adapter
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
+import com.here.sdk.core.GeoCoordinates
+import com.here.sdk.core.errors.InstantiationErrorException
+import com.here.sdk.routing.*
 import com.vici.vici.Activities.MainActivity.Companion.db
+import com.vici.vici.Activities.MapsActivity.Companion.mFusedLocationProviderClient
 import com.vici.vici.Adapters.AdsResultAdapter
 import com.vici.vici.Constants.StringConstants
 import com.vici.vici.R
@@ -20,9 +30,10 @@ import com.vici.vici.Util.Utility
 import com.vici.vici.models.AdModel
 import kotlinx.android.synthetic.main.activity_browsepage.*
 import kotlinx.android.synthetic.main.filter_mapview_view.view.*
+import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
+
 
 //////// <<<<<< GET
 
@@ -52,6 +63,7 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
     lateinit var startCalendar: Calendar
     lateinit var endCalendar: Calendar
     var dummyResponse = ArrayList<AdModel>()
+    lateinit var currentLatLang: LatLng
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,13 +73,14 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
         browse_page_searchbar.setStartIconOnClickListener { finish() }
         browse_page_searchbar.setEndIconOnClickListener { finish() }
 
+        getDeviceLocation()
         addTextToSearchBar()
         addListenerToSearchBar()
 
         calender = Calendar.getInstance()
 
         configureDateTimePicker()
-        configureResultsRecyclerView()
+//        configureResultsRecyclerView()
         configureBottomButtons()
     }
 
@@ -116,14 +129,38 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
 
         for (item in ads[brandKey]!!) {
             configureAdModel(item) { addressOfUser ->
-                val itemAdModel = AdModel(url, item[StringConstants.NAME]!!, addressOfUser, item[StringConstants.PRICE]!!.toDouble(), 7.7, "5", LatLng(17.25186, 78.41835))
-                adsAdapterArray.add(itemAdModel)
+                try {
+                    val s = Waypoint(GeoCoordinates(currentLatLang.latitude, currentLatLang.longitude))
+                    val latLong = item[StringConstants.LAT_LONG]!!.split(",")
+                    val d = Waypoint(GeoCoordinates(latLong.first().toDouble(), latLong.last().toDouble()))
+                    val waypoints = ArrayList<Waypoint>()
+                    waypoints.add(s)
+                    waypoints.add(d)
 
-                if (item == ads[brandKey]!!.last()) {
-                    ads_recyclerview.layoutManager = LinearLayoutManager(this)
-                    ads_recyclerview.adapter = AdsResultAdapter(this, adsAdapterArray)
-                    (ads_recyclerview.adapter as AdsResultAdapter).notifyDataSetChanged()
+                    val routingEngine = RoutingEngine()
+                    routingEngine.calculateRoute(
+                        waypoints,
+                        CarOptions(),
+                        CalculateRouteCallback() { routingError: RoutingError?, routes: MutableList<Route>? ->
+                            if (routingError == null) {
+                                val route: Route = routes!!.get(0)
+                                val distanceInkms = routes[0].lengthInMeters/1000.0
+                                val itemAdModel = AdModel(url, item[StringConstants.NAME]!!, addressOfUser, item[StringConstants.PRICE]!!.toDouble(), distanceInkms, "5", item[StringConstants.LAT_LONG].toString())
+                                adsAdapterArray.add(itemAdModel)
+                            }
+
+                            if (item == ads[brandKey]!!.last()) {
+                                ads_recyclerview.layoutManager = LinearLayoutManager(this)
+                                ads_recyclerview.adapter = AdsResultAdapter(this, adsAdapterArray)
+                                (ads_recyclerview.adapter as AdsResultAdapter).notifyDataSetChanged()
+                            }
+                        }
+                    )
+                } catch (e: InstantiationErrorException) {
+                    throw RuntimeException("Initialization of RoutingEngine failed: " + e.error.name)
                 }
+
+
             }
         }
     }
@@ -336,5 +373,38 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
         return false
     }
 
+    private fun getDeviceLocation() {
+        val location = if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        } else {
 
+        }
+            mFusedLocationProviderClient!!.lastLocation.addOnCompleteListener(object : OnCompleteListener<Location> {
+            override fun onComplete(task: Task<Location>) {
+                if (task.isSuccessful) {
+                    val currentLocation: Location? = task.result as Location?
+                    if (currentLocation != null) {
+                        currentLatLang = LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())
+                        configureResultsRecyclerView()
+                    }
+                } else {
+                    print("unable to get current location")
+                }
+            }
+        })
+    }
 }
