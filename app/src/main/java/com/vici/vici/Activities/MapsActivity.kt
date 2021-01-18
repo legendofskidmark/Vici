@@ -39,7 +39,9 @@ import java.util.ArrayList
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-    private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
+    companion object {
+        var mFusedLocationProviderClient: FusedLocationProviderClient? = null
+    }
     private lateinit var mBottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var searchBarSuggestionsList: MutableList<Product>
 
@@ -139,31 +141,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
-        if (ContextCompat.checkSelfPermission(
-                this.applicationContext,
-                FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            if (ContextCompat.checkSelfPermission(
-                    this.applicationContext,
-                    COURSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
+        if (ContextCompat.checkSelfPermission(this.applicationContext, FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this.applicationContext, COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mLocationPermissionsGranted = true
                 initMap()
             } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    permissions,
-                    LOCATION_PERMISSION_REQUEST_CODE
-                )
+                ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
             }
         } else {
-            ActivityCompat.requestPermissions(
-                this,
-                permissions,
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
+            ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
         }
     }
 
@@ -199,28 +185,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun getDeviceLocation() {
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        if (mFusedLocationProviderClient == null) {
+            mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        }
         try {
             if (mLocationPermissionsGranted) {
-                val location = mFusedLocationProviderClient.getLastLocation()
-                location.addOnCompleteListener(object : OnCompleteListener<Location> {
-                    override fun onComplete(task: Task<Location>) {
-                        if (task.isSuccessful) {
-                            val currentLocation: Location? = task.result as Location?
-                            if (currentLocation != null) {
-                                moveCamera(
-                                    LatLng(
-                                        currentLocation.getLatitude(),
-                                        currentLocation.getLongitude()
-                                    ),
-                                    DEFAULT_ZOOM
-                                )
-                            }
-                        } else {
-                            print("unable to get current location")
+                val location = mFusedLocationProviderClient!!.lastLocation
+                location.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val currentLocation: Location? = task.result as Location?
+                        if (currentLocation != null) {
+                            moveCamera(
+                                LatLng(
+                                    currentLocation.getLatitude(),
+                                    currentLocation.getLongitude()
+                                ),
+                                DEFAULT_ZOOM
+                            )
                         }
+                    } else {
+                        print("unable to get current location")
                     }
-                })
+                }
             }
         } catch (e: SecurityException) {
 
