@@ -13,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
@@ -64,6 +65,10 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
     lateinit var endCalendar: Calendar
     var dummyResponse = ArrayList<AdModel>()
     lateinit var currentLatLang: LatLng
+
+    private val FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
+    private val COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION
+    private val LOCATION_PERMISSION_REQUEST_CODE = 1234
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -384,11 +389,12 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            return
+            getLocationPermission()
+//            return
         } else {
 
         }
-            mFusedLocationProviderClient!!.lastLocation.addOnCompleteListener(object : OnCompleteListener<Location> {
+            mFusedLocationProviderClient?.lastLocation?.addOnCompleteListener(object : OnCompleteListener<Location> {
             override fun onComplete(task: Task<Location>) {
                 if (task.isSuccessful) {
                     val currentLocation: Location? = task.result as Location?
@@ -401,5 +407,45 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
                 }
             }
         })
+    }
+
+    private fun getLocationPermission() {
+        val permissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        if (ContextCompat.checkSelfPermission(this.applicationContext, FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this.applicationContext, COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                mLocationPermissionsGranted = true
+//                initMap()
+            } else {
+                ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
+            }
+        } else {
+            ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String?>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.size > 0) {
+                    var i = 0
+                    while (i < grantResults.size) {
+                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                            Toast.makeText(this, StringConstants.MUST_ACCEPT_LOCATION_PERMISSION, Toast.LENGTH_LONG).show()
+                            finish()
+                        }
+                        i++
+                    }
+
+                    getDeviceLocation()
+                }
+            }
+        }
     }
 }
