@@ -65,13 +65,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         homePageBottomSheetHandler()
         Utility.hideActionBar(supportActionBar, window)
-        getLocationPermission()
 //        handleSearchBarRequests()
 
     }
 
     override fun onStart() {
         super.onStart()
+
+        getLocationPermission()
         val sp = SharedPreferencesUtility.openSharedPreferencesWith(this, StringConstants.SHARED_PREF_FILE_NAME)
 
         if(sp.contains(StringConstants.RECENT_SEARCH_LIST)) {
