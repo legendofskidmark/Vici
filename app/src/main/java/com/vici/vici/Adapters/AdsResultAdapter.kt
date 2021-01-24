@@ -28,7 +28,7 @@ class AdsResultAdapter(val mContext: Context, val response: ArrayList<AdModel>):
         holder.title.text = currentItem.name
         holder.address.text = currentItem.address
         holder.price.text = currentItem.price.toString()
-        if (currentItem.distance == -1.0) {
+        if (currentItem.distance == Double.MAX_VALUE) {
             holder.distance.text = "NA"
         } else {
             holder.distance.text = currentItem.distance.toString()

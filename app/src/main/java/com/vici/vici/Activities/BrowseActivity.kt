@@ -65,6 +65,7 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
     lateinit var endCalendar: Calendar
     var dummyResponse = ArrayList<AdModel>()
     lateinit var currentLatLang: LatLng
+    var adsAdapterArray = ArrayList<AdModel>()
 
     private val FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
     private val COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION
@@ -103,15 +104,15 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
 
     override fun applyFilter(selectedOption: String) {
         if (getString(R.string.distance_string) == selectedOption) {
-            val sortedDistList = dummyResponse.sortedWith(compareBy({it.distance}))
-            dummyResponse.clear()
-            dummyResponse.addAll(sortedDistList)
+            val sortedDistList = adsAdapterArray.sortedWith(compareBy({it.distance}))
+            adsAdapterArray.clear()
+            adsAdapterArray.addAll(sortedDistList)
         } else if (getString(R.string.price_string) == selectedOption) {
-            val sortedPriceList = dummyResponse.sortedWith(compareBy({it.price}))
-            dummyResponse.clear()
-            dummyResponse.addAll(sortedPriceList)
+            val sortedPriceList = adsAdapterArray.sortedWith(compareBy({it.price}))
+            adsAdapterArray.clear()
+            adsAdapterArray.addAll(sortedPriceList)
         }
-        ads_recyclerview.adapter = AdsResultAdapter(this, dummyResponse)
+        ads_recyclerview.adapter = AdsResultAdapter(this, adsAdapterArray)
         (ads_recyclerview.adapter as AdsResultAdapter).notifyDataSetChanged()
     }
 
@@ -130,7 +131,7 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
         val bundle = intent.extras
         val ads = bundle?.getSerializable(StringConstants.CLICKED_SEARCH_RESULT_BUNDLE) as HashMap<String, ArrayList<AdModel>>
         val brandKey = ads.keys.toList().first()
-        var adsAdapterArray = ArrayList<AdModel>()
+        adsAdapterArray.clear()
 
         for (item in ads[brandKey]!!) {
             configureAdModel(item) { addressOfUser ->
@@ -152,7 +153,7 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
                                 val distanceInkms = routes[0].lengthInMeters/1000.0
                                 item.distance = distanceInkms
                             } else {
-                                item.distance = -1.0
+                                item.distance = Double.MAX_VALUE
                             }
                             item.imgUrls = url
                             adsAdapterArray.add(item)
