@@ -85,6 +85,15 @@
             android:layout_margin="16dp" />
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recent_search_grouped_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbarStyle="outsideInset"
+            android:scrollIndicators="right"
+            android:overScrollMode="never"
+            android:orientation="vertical"/>
+
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recent_search_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

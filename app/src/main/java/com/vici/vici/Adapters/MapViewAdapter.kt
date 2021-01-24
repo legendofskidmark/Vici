@@ -25,12 +25,11 @@ class MapViewAdapter(val mContext: Context, val response: ArrayList<AdModel>): R
 
     override fun onBindViewHolder(holder: MapViewCell, position: Int) {
         val currentAd = response[position]
-        holder.mapViewtitle.text = currentAd.title
+        holder.mapViewtitle.text = currentAd.name
         holder.mapViewDistance.text = currentAd.distance.toString()
         holder.mapViewReview.text = "5*"
 
         holder.mapViewDirectioButton.setOnClickListener {
-            Log.d("Boon", currentAd.latLng.toString())
             val gmmIntentUri = Uri.parse("google.navigation:q=17.185,78.4292")
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
             mapIntent.setPackage("com.google.android.apps.maps")

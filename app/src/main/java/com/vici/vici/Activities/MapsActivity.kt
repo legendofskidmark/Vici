@@ -32,7 +32,10 @@ import com.vici.vici.models.Product
 import com.vici.vici.R
 import com.vici.vici.Util.SharedPreferencesUtility
 import com.vici.vici.Util.Utility
+import com.vici.vici.models.AdModel
 import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.android.synthetic.main.recent_items.*
+import java.io.Serializable
 import java.util.ArrayList
 
 
@@ -70,11 +73,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onStart() {
         super.onStart()
         val sp = SharedPreferencesUtility.openSharedPreferencesWith(this, StringConstants.SHARED_PREF_FILE_NAME)
+
         if(sp.contains(StringConstants.RECENT_SEARCH_LIST)) {
+            if (no_recent_search_textview != null) no_recent_search_textview.visibility = View.GONE
             val gson = Gson()
             val json = sp.getString(StringConstants.RECENT_SEARCH_LIST, "[]")
-            val type = object : TypeToken<ArrayList<String?>?>() {}.type
-            val recentList: ArrayList<String> = gson.fromJson(json, type)
+            val type = object : TypeToken<ArrayList<AdModel?>?>() {}.type
+            val recentList: ArrayList<AdModel> = gson.fromJson(json, type)
             val recentItemChipGroup = homepage_bottomsheet_View.findViewById<LinearLayout>(R.id.recent_items_view).findViewById<ChipGroup>(R.id.recent_chipGroup)
             recentItemChipGroup.removeAllViews()
             for(item in recentList) {
@@ -82,17 +87,54 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 recentItemChipGroup.addView(chipView)
             }
         }
+
+        if(sp.contains(StringConstants.RECENT_SEARCH_LIST_GROUP)) {
+            val gson = Gson()
+            val json = sp.getString(StringConstants.RECENT_SEARCH_LIST_GROUP, "[]")
+            val type = object : TypeToken<ArrayList<Pair<String, ArrayList<AdModel>>?>?>() {}.type
+            val recentList: ArrayList<Pair<String, ArrayList<AdModel>>> = gson.fromJson(json, type)
+            val recentItemChipGroup = homepage_bottomsheet_View.findViewById<LinearLayout>(R.id.recent_items_view).findViewById<ChipGroup>(R.id.recent_chipGroup)
+            recentItemChipGroup.removeAllViews()
+            for(item in recentList) {
+                val chipView = configureChip(item)
+                recentItemChipGroup.addView(chipView)
+            }
+        }
+
     }
 
-    private fun configureChip(itemTitle: String): Chip {
+    private fun configureChip(item: AdModel): Chip {
         val newChip = Chip(this)
-        newChip.text = itemTitle
+        newChip.text = item.name
         newChip.setOnClickListener {
-            val intent = Intent(this, BrowseActivity::class.java)
-            intent.putExtra(StringConstants.CLICKED_SEARCH_RESULT, itemTitle)
+            val intent = Intent(this, VAPActivity::class.java)
+//            intent.putExtra(StringConstants.CLICKED_SEARCH_RESULT_BUNDLE, item)
+//            intent.putExtra(StringConstants.CLICKED_SEARCH_RESULT, item.name)
             startActivity(intent)
         }
         return newChip
+    }
+
+    private fun configureChip(item: Pair<String, ArrayList<AdModel>>): Chip {
+        val newChip = Chip(this)
+        newChip.text = item.first
+        newChip.setOnClickListener {
+            val intent = Intent(this, BrowseActivity::class.java)
+
+            val hashMapOfGroupedItem = serializeData(item)
+            val bundle = Bundle()
+            bundle.putSerializable(StringConstants.CLICKED_SEARCH_RESULT_BUNDLE, hashMapOfGroupedItem)
+            intent.putExtras(bundle)
+            intent.putExtra(StringConstants.CLICKED_SEARCH_RESULT, item.first)
+            startActivity(intent)
+        }
+        return newChip
+    }
+
+    private fun serializeData(pair: Pair<String, ArrayList<AdModel>>): HashMap<String, ArrayList<AdModel>> {
+        var hashMap = HashMap<String, ArrayList<AdModel>>()
+        hashMap.put(pair.first, pair.second)
+        return hashMap
     }
 
     private fun handleSearchBarRequests() {
