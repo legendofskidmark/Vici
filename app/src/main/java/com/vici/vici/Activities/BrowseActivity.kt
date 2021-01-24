@@ -123,7 +123,7 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
 
 
         val bundle = intent.extras
-        val ads = bundle?.getSerializable(StringConstants.CLICKED_SEARCH_RESULT_BUNDLE) as HashMap<String, ArrayList<HashMap<String, String>>>
+        val ads = bundle?.getSerializable(StringConstants.CLICKED_SEARCH_RESULT_BUNDLE) as HashMap<String, ArrayList<AdModel>>
         val brandKey = ads.keys.toList().first()
         var adsAdapterArray = ArrayList<AdModel>()
 
@@ -131,8 +131,8 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
             configureAdModel(item) { addressOfUser ->
                 try {
                     val s = Waypoint(GeoCoordinates(currentLatLang.latitude, currentLatLang.longitude))
-                    val latLong = item[StringConstants.LAT_LONG]!!.split(",")
-                    val d = Waypoint(GeoCoordinates(latLong.first().toDouble(), latLong.last().toDouble()))
+                    val latLong = item.latLong?.split(",")
+                    val d = Waypoint(GeoCoordinates(latLong?.first().toString().toDouble(), latLong?.last().toString().toDouble()))
                     val waypoints = ArrayList<Waypoint>()
                     waypoints.add(s)
                     waypoints.add(d)
@@ -145,10 +145,12 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
                             if (routingError == null) {
                                 val route: Route = routes!!.get(0)
                                 val distanceInkms = routes[0].lengthInMeters/1000.0
-                                val itemAdModel = AdModel(url, item[StringConstants.NAME]!!, addressOfUser, item[StringConstants.PRICE]!!.toDouble(), distanceInkms, "5", item[StringConstants.LAT_LONG].toString())
-                                adsAdapterArray.add(itemAdModel)
+                                item.distance = distanceInkms
+                            } else {
+                                item.distance = -1.0
                             }
-
+                            item.imgUrls = url
+                            adsAdapterArray.add(item)
                             if (item == ads[brandKey]!!.last()) {
                                 ads_recyclerview.layoutManager = LinearLayoutManager(this)
                                 ads_recyclerview.adapter = AdsResultAdapter(this, adsAdapterArray)
@@ -165,8 +167,8 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
         }
     }
 
-    private fun configureAdModel(item: HashMap<String, String>, getAddressOfOwnerCallback: (email: String) -> Unit) {
-        db.collection(StringConstants.UsersDBName).document(item[StringConstants.USER_EMAIL_ID].toString()).get().addOnCompleteListener { task ->
+    private fun configureAdModel(item: AdModel, getAddressOfOwnerCallback: (email: String) -> Unit) {
+        db.collection(StringConstants.UsersDBName).document(item.emailID.toString()).get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val address = task.result[StringConstants.ADDRESS].toString()
                 getAddressOfOwnerCallback(address)
@@ -374,14 +376,7 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
     }
 
     private fun getDeviceLocation() {
-        val location = if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        val location = if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding

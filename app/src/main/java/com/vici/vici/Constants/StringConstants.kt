@@ -9,6 +9,7 @@ object StringConstants {
     val CLICKED_SEARCH_RESULT_BUNDLE = "clickedSearchResultBundle"
     val QUERIED_SEARCH_RESULT = "queriedSearchResult"
     val RECENT_SEARCH_LIST = "recentSearchList"
+    val RECENT_SEARCH_LIST_GROUP = "recentSearchListGrouped"
     val SAVED_ITEMS_LIST = "savedItemsList"
     val VAP_AD_IMAGE_URLS = "imgUrls"
     val VAP_AD_TITLE = "vapAdTitle"
@@ -38,4 +39,6 @@ object StringConstants {
     val PRODUCTS = "Products"
     val IS_ALIVE = "IsAlive"
     val FROM_USER = "FromUser"
+
+    val SEE_ALL_AVAILABLE_PRODUCTS = "See all available products"
 }

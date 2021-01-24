@@ -17,12 +17,14 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.vici.vici.Activities.MainActivity.Companion.db
 import com.vici.vici.Adapters.RecentSearchAdapter
+import com.vici.vici.Adapters.RecentSearchGroupAdapter
 import com.vici.vici.Adapters.searchResultAdapter
 import com.vici.vici.Constants.IntegerConstants
 import com.vici.vici.Constants.StringConstants
 import com.vici.vici.R
 import com.vici.vici.Util.SharedPreferencesUtility
 import com.vici.vici.Util.Utility
+import com.vici.vici.models.AdModel
 import kotlinx.android.synthetic.main.activity_searchpage.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -33,9 +35,10 @@ class SearchpageActivity: AppCompatActivity() {
 
     val mTAG = "SearchpageActivity"
     lateinit var searchBarSuggestionsList: MutableList<QueryDocumentSnapshot>
-    var filteredList: MutableList<HashMap<String, String>> = mutableListOf()
-    var filteredListGroup = HashMap<String, ArrayList<HashMap<String, String>>>()
-    var groupedItems = HashMap<String, ArrayList<HashMap<String, String>>>()
+    var filteredList = ArrayList<AdModel>()
+    var filteredListGroup = HashMap<String, ArrayList<AdModel>>()
+    var groupedItems = HashMap<String, ArrayList<AdModel>>()
+    var allItemsList = ArrayList<AdModel>()
     var recentSearchedList: ArrayList<String> = ArrayList()
     var didHitApi = false
 
@@ -79,12 +82,25 @@ class SearchpageActivity: AppCompatActivity() {
                                             StringConstants.LAT_LONG to latLong
                                         )
 
+                                        val groupedAdModel = AdModel()
+                                        groupedAdModel.emailID = itemOwnerMailID
+                                        groupedAdModel.brand = brand.toString()
+                                        groupedAdModel.name = doc[StringConstants.NAME].toString()
+                                        groupedAdModel.modelType = doc[StringConstants.MODEL].toString()
+                                        groupedAdModel.age = doc[StringConstants.AGE].toString()
+                                        groupedAdModel.perTime = doc[StringConstants.PER_TIME].toString()
+                                        groupedAdModel.price = doc[StringConstants.PRICE].toString().toDouble()
+                                        groupedAdModel.latLong = latLong
+                                        groupedAdModel.isGrouped = true
+
+                                        allItemsList.add(groupedAdModel)
+
                                         if (groupedItems[brand.toString().toUpperCase()].isNullOrEmpty()) {
-                                            val arrayList = ArrayList<HashMap<String, String>>()
-                                            arrayList.add(details)
+                                            val arrayList = ArrayList<AdModel>()
+                                            arrayList.add(groupedAdModel)
                                             groupedItems[brand.toString().toUpperCase()] = arrayList
                                         } else {
-                                            groupedItems[brand.toString().toUpperCase()]?.add(details)
+                                            groupedItems[brand.toString().toUpperCase()]?.add(groupedAdModel)
                                         }
                                     }
                                 }
@@ -101,8 +117,8 @@ class SearchpageActivity: AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        filteredList.clear()
-        filteredListGroup.clear()
+//        filteredList.clear()
+//        filteredListGroup.clear()
         groupedItems.clear()
         setGroupedItems()
         handleRecentSearches()
@@ -110,8 +126,14 @@ class SearchpageActivity: AppCompatActivity() {
     }
 
     private fun handleRecentSearches() {
+        recent_search_grouped_recyclerview.layoutManager = LinearLayoutManager(this)
         recent_search_recyclerview.layoutManager = LinearLayoutManager(this)
         val sharedPref = SharedPreferencesUtility.openSharedPreferencesWith(this, StringConstants.SHARED_PREF_FILE_NAME)
+
+        if (sharedPref.contains(StringConstants.RECENT_SEARCH_LIST_GROUP)) {
+            val recentlySearchedList = getRecentSearcheGroupFromSharedPref(sharedPref)
+            recent_search_grouped_recyclerview.adapter = RecentSearchGroupAdapter(this, recentlySearchedList)
+        }
 
         if (sharedPref.contains(StringConstants.RECENT_SEARCH_LIST)) {
             val recentlySearchedList = getRecentSearchesFromSharedPref(sharedPref)
@@ -119,10 +141,17 @@ class SearchpageActivity: AppCompatActivity() {
         }
     }
 
-    private fun getRecentSearchesFromSharedPref(sp: SharedPreferences): ArrayList<String> {
+    private fun getRecentSearchesFromSharedPref(sp: SharedPreferences): ArrayList<AdModel> {
         val gson = Gson()
         val json = sp.getString(StringConstants.RECENT_SEARCH_LIST, "[]")
-        var type = object : TypeToken<ArrayList<String?>?>() {}.type
+        var type = object : TypeToken<ArrayList<AdModel?>?>() {}.type
+        return gson.fromJson(json, type)
+    }
+
+    private fun getRecentSearcheGroupFromSharedPref(sp: SharedPreferences): ArrayList<Pair<String, java.util.ArrayList<AdModel>>> {
+        val gson = Gson()
+        val json = sp.getString(StringConstants.RECENT_SEARCH_LIST_GROUP, "[]")
+        var type = object : TypeToken<ArrayList<Pair<String, ArrayList<AdModel?>?>?>?>() {}.type
         return gson.fromJson(json, type)
     }
 
@@ -164,7 +193,7 @@ class SearchpageActivity: AppCompatActivity() {
             if (brandedItem.value.size > 1) {
                 for (item in brandedItem.value) {
                     if (doesItemContainsQueryString(item, brandedItem.key, query)) {
-                        filteredListGroup.put(brandedItem.key, brandedItem.value)
+                        filteredListGroup[brandedItem.key] = brandedItem.value
                         break
                     }
                 }
@@ -185,8 +214,8 @@ class SearchpageActivity: AppCompatActivity() {
 
     }
 
-    private fun doesItemContainsQueryString(item: HashMap<String, String>, brandName: String, query: String): Boolean {
-        if (item[StringConstants.NAME]!!.contains(query, ignoreCase = true) || item[StringConstants.MODEL]!!.contains(query, ignoreCase = true) || brandName.contains(query, ignoreCase = true)) return true
+    private fun doesItemContainsQueryString(item: AdModel, brandName: String, query: String): Boolean {
+        if (item.name?.contains(query, ignoreCase = true) == true || item.modelType?.contains(query, ignoreCase = true) == true || brandName.contains(query, ignoreCase = true)) return true
         return false
     }
 

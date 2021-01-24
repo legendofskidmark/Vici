@@ -25,13 +25,18 @@ class AdsResultAdapter(val mContext: Context, val response: ArrayList<AdModel>):
 
     override fun onBindViewHolder(holder: AdsCell, position: Int) {
         val currentItem = response[position]
-        holder.title.text = currentItem.title
+        holder.title.text = currentItem.name
         holder.address.text = currentItem.address
         holder.price.text = currentItem.price.toString()
-        holder.distance.text = currentItem.distance.toString()
+        if (currentItem.distance == -1.0) {
+            holder.distance.text = "NA"
+        } else {
+            holder.distance.text = currentItem.distance.toString()
+        }
         holder.rating.text = currentItem.rating
 
-        holder.imgRecyclerView.adapter = ImageRecyclerViewAdapter(mContext, currentItem.imgUrls)
+        holder.imgRecyclerView.adapter =
+            currentItem.imgUrls?.let { ImageRecyclerViewAdapter(mContext, it) }
         holder.imgRecyclerView.layoutManager = LinearLayoutManager(mContext ,LinearLayoutManager.HORIZONTAL, false)
 
         holder.adCell.setOnClickListener {
@@ -39,7 +44,7 @@ class AdsResultAdapter(val mContext: Context, val response: ArrayList<AdModel>):
 
             val adDataBundle = Bundle()
             adDataBundle.putStringArrayList(StringConstants.VAP_AD_IMAGE_URLS, currentItem.imgUrls)
-            adDataBundle.putString(StringConstants.VAP_AD_TITLE, currentItem.title)
+            adDataBundle.putString(StringConstants.VAP_AD_TITLE, currentItem.name)
             adDataBundle.putString(StringConstants.VAP_AD_ADDRESS, currentItem.address)
             adDataBundle.putString(StringConstants.VAP_AD_PRICE, currentItem.price.toString())
             adDataBundle.putString(StringConstants.VAP_AD_DISTANCE, currentItem.distance.toString())
