@@ -42,4 +42,6 @@ object StringConstants {
 
     val SEE_ALL_AVAILABLE_PRODUCTS = "See all available products"
     val MUST_ACCEPT_LOCATION_PERMISSION = "You must allow Vici to access location to see the ads"
+
+    val DISTANCE = "distance"
 }

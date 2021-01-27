@@ -120,7 +120,7 @@ class SearchpageActivity: AppCompatActivity() {
 //        filteredList.clear()
 //        filteredListGroup.clear()
         groupedItems.clear()
-        setGroupedItems()
+        if (db != null) { setGroupedItems() }
         handleRecentSearches()
         didHitApi = false
     }
