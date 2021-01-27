@@ -26,6 +26,8 @@ import com.vici.vici.Activities.MainActivity.Companion.db
 import com.vici.vici.Activities.MapsActivity.Companion.mFusedLocationProviderClient
 import com.vici.vici.Adapters.AdsResultAdapter
 import com.vici.vici.Constants.StringConstants
+import com.vici.vici.Constants.StringConstants.DISTANCE
+import com.vici.vici.Constants.StringConstants.PRICE
 import com.vici.vici.R
 import com.vici.vici.Util.Utility
 import com.vici.vici.models.AdModel
@@ -39,7 +41,7 @@ import kotlin.collections.ArrayList
 //////// <<<<<< GET
 
 
-class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListener {
+class BrowseActivity : AppCompatActivity() {
 
     val halfHourInMillisec: Long = 1800000
     val tenMininMillisec: Long = 600000
@@ -66,6 +68,8 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
     var dummyResponse = ArrayList<AdModel>()
     lateinit var currentLatLang: LatLng
     var adsAdapterArray = ArrayList<AdModel>()
+    var sortIndicatorPriceFlag = true
+    var sortIndicatorDistanceFlag = true
 
     private val FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
     private val COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION
@@ -91,26 +95,47 @@ class BrowseActivity : AppCompatActivity(), FilterPopupView.FilterAppliedListene
     }
 
     private fun configureBottomButtons() {
-        filter_mapview_buttons.filter_button.setOnClickListener {
-            val filterPopupView = FilterPopupView()
-            filterPopupView.show(supportFragmentManager, "Filter_Menu")
+        filter_mapview_buttons.price_sort_button.setOnClickListener {
+            if (sortIndicatorPriceFlag) {
+                filter_mapview_buttons.price_sort_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_upward, 0)
+            } else {
+                filter_mapview_buttons.price_sort_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_downward, 0)
+            }
+            applyFilter(PRICE)
         }
 
-        filter_mapview_buttons.map_view_button.setOnClickListener {
-            val intent = Intent(this, MapsViewActivity::class.java)
-            this.startActivity(intent)
+        filter_mapview_buttons.distance_sort_button.setOnClickListener {
+            if (sortIndicatorDistanceFlag) {
+                filter_mapview_buttons.distance_sort_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_upward, 0)
+            } else {
+                filter_mapview_buttons.distance_sort_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_downward, 0)
+            }
+            applyFilter(DISTANCE)
         }
     }
 
-    override fun applyFilter(selectedOption: String) {
-        if (getString(R.string.distance_string) == selectedOption) {
+//    override
+    fun applyFilter(selectedOption: String) {
+        if (DISTANCE == selectedOption) {
             val sortedDistList = adsAdapterArray.sortedWith(compareBy({it.distance}))
             adsAdapterArray.clear()
-            adsAdapterArray.addAll(sortedDistList)
-        } else if (getString(R.string.price_string) == selectedOption) {
+            if (sortIndicatorDistanceFlag) {
+                adsAdapterArray.addAll(sortedDistList.reversed())
+            } else {
+                adsAdapterArray.addAll(sortedDistList)
+            }
+            sortIndicatorDistanceFlag = !sortIndicatorDistanceFlag
+        } else
+
+            if (PRICE == selectedOption) {
             val sortedPriceList = adsAdapterArray.sortedWith(compareBy({it.price}))
             adsAdapterArray.clear()
-            adsAdapterArray.addAll(sortedPriceList)
+                if (sortIndicatorPriceFlag) {
+                    adsAdapterArray.addAll(sortedPriceList.reversed())
+                } else {
+                    adsAdapterArray.addAll(sortedPriceList)
+                }
+                sortIndicatorPriceFlag = !sortIndicatorPriceFlag
         }
         ads_recyclerview.adapter = AdsResultAdapter(this, adsAdapterArray)
         (ads_recyclerview.adapter as AdsResultAdapter).notifyDataSetChanged()
